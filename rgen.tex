@@ -1,0 +1,33 @@
+
+%(Untested Latex code)
+
+\subsubsection*{Random exponential decay time}
+$$P(x)= e^{-x} ; x>=0$$
+
+$$\int_0^x e^{-x'} dx' = 1 - e^{-x} = p $$
+
+Clearly normalized, $x = -log(1-p)$
+
+\subsubsection*{Random 1/x distribution}
+$$P(x)\propto 1/x$$
+
+Not normalizable; have maximimum and minimum $m_+,m_-$
+
+$$\int_{m_-}^x1/x' dx' = log(x/m_-)$$
+
+So we know to divide by $log(x/m_-)$
+
+$$p = \frac{log(x/m_-)}{log(m_+/m_-)}  \Rightarrow
+  x = m_-\left(\frac{m_+}{m_-}\right)^p$$
+
+\subsubsection*{Random 3d cosine and direction}
+$$dA = sin(\theta)d\phid\theta \Rightarrow dA = 2\pi sin(\theta)d\theta$$
+
+So $A(\theta) = 2\pi \int_0^\theta sin(\theta)d\theta = 2\pi(1-cos(\theta))$
+
+Of course normalizing factor $=1/4\pi$ so
+
+$$ p = \frac{1}{2}(1-cos(\theta)) \Rightarrow cos(\theta) = 2p-1 $$
+
+from which $sin(\theta)=sqrt(1-cos(\theta)^2)$ follows easily, it happens to be
+always positive anyway. $\phi$ is just a flat distribution.
