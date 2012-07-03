@@ -8,14 +8,11 @@ type Path
 end
 
 #Makes array for you, converts number types.
-Path(kind::ParticleKind, start_pos::Vector{Number}, 
-     momentum::Vector{Number}) =
-    Path(photon_p,
-         float64(start_pos), float64{momentum}, Array(Path,0))
+Path(kind::ParticleKind, start_pos, momentum) =
+    Path(kind, float64(start_pos),float64(momentum), Array(Path,0))
 
 #Provide number for momentum instead of vector.
-Path(kind::ParticleKind, 
-     start_pos::Vector{Number}, momentum::Number) =
+Path(kind::ParticleKind, start_pos, momentum::Number) =
     Path(kind, start_pos, [0,0,momentum])
 #Don't provide position, put that just at zero.
 Path(kind::ParticleKind, momentum) = 
@@ -30,3 +27,19 @@ energy_sqr(thing)    = particle_mass(thing) + norm(momentum(thing))^2
 energy(thing)        = sqrt(energy_sqr(thing))
 
 direction(path::Path) = path.momentum/norm(path.momentum)
+
+function energy(list::Vector) 
+  sum = float64(0)
+  for el = list
+    sum += energy(el)
+  end
+  return sum
+end
+
+function momentum(list::Vector) 
+  sum = float64([0,0,0])
+  for el = list
+    sum += momentum(el)
+  end
+  return sum
+end

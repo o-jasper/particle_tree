@@ -1,4 +1,11 @@
 
+virtual_M(omega, m,p,E,cos_angle) = sqrt(m^2 + 2*omega*(E - p*cos_angle))
+virtual_M(omega, m,p,cos_angle) = virtual_M(omega, m,p,sqrt(m^2+p^2),cos_angle)
+
+#Pair production impossible.
+no_pair_production_p(volume::Volume, m,p, m_e) =
+    virtual_M(volume.max_soft_photon, m,p,-1)/2 < m_e
+
 # Monte-carlo the transport of single path.
 # (returning children, not setting them)
 function transport(path::Path, volume::Volume)
@@ -9,37 +16,47 @@ function transport(path::Path, volume::Volume)
 #Some particle infos.
   m = particle_mass(path)
   p = norm(momentum(path))
-  E = sqrt(m^2 + p^2)
 #Rest mass of product. 
-  M = sqrt(m^2 + 2*omega*(E - p*cos_angle))
+  M = virtual_M(omega, m,p,cos_angle)
 
   pdg_code = path.kind.pdg_code #Get pdg code to see what it does.
 #When we go from CM - back to lab-frame, this is the speed to transform.
 # Note: the soft photon momentum is ignored.
-  beta  = momentum(path)/energy(path)
-  gamma = gamma(beta)
+  beta  = momentum(path)/sqrt(p^2 + M^2) #WARNING _NOT_ energy(path)!
+  bgamma = beta_gamma(beta)
 #Distance travelled.
   dist   = radiation_distance(volume, path.kind)*rand_exp()
-  end_pos = path.start_pos + direction(momentum(path))*dist
-  function lab_frame_particle(kind, p_cm,E_cm)
-    Path(kind, end_pos, lorentz_transform_x(p_cm,E_cm, beta, gamma))
+  end_pos = path.start_pos + momentum(path)*dist/p
+  function lab_frame_particle(kind, E_cm::Number,p_cm)
+    Path(kind, end_pos, lorentz_transform_x(E_cm,p_cm, -beta, bgamma))
+  end
+#Take out photons that are doomed.
+  m_e = particle_mass(electron) 
+  if pdg_code==22 && no_pair_production_p(volume::Volume, m,p, m_e)
+    return Array(Path,0)
   end
 #Particle production _cm means centre-of mass quantities.
   if pdg_code == 22 #Photon => pair production
-    E_cm = M/2 #Just spit energy equally
-    p_cm = sqrt(E_cm^2 - m^2)*rand_3d_direction()
-    return [lab_frame_particle(electron, +p_cm,E_cm), #Opposite (anti)electron
-            lab_frame_particle(electron, -p_cm,E_cm)]
+    E_cm = M/2 #Just split energy equally
+ #TODO i don't think this is a nice way of cutting off.
+    if E_cm <= m_e # Nothing happened. (apparently too low energies now.)
+      return [Path(path.kind, end_pos, path.momentum)] 
+    end
+    p_cm = sqrt(E_cm^2 -m_e^2)*rand_3d_direction()
+    return [lab_frame_particle(electron, E_cm, +p_cm), #Opposite (anti)electron
+            lab_frame_particle(positron, E_cm, -p_cm)]
   else #Else basically assume it is something that just brehmstrahlungs
     norm_p_cm = (M - m^2/M)/2
     p_cm   = norm_p_cm*rand_3d_direction()
-    return [lab_frame_particle(path.kind, +p_cm,sqrt(m^2 + norm_p_cm^2)),
-            lab_frame_particle(photon,    -p_cm,p_cm)]
+    new_m = particle_mass(path.kind)
+    return [lab_frame_particle(path.kind, sqrt(new_m^2 + norm_p_cm^2), +p_cm),
+            lab_frame_particle(photon,    norm_p_cm,                   -p_cm)]
   end
 end
 # Destructive version of the previous.
-transport!(path::Path, volume::Volume) = #!
-     (path.children = transport(path,volume))
+function transport!(path::Path, volume::Volume)
+  path.children = transport(path,volume)
+end
 
 # Recursively transport a path. (children, grandchildren, etcetera.)
 function recursive_transport!(path::Path, volume::Volume, 
@@ -47,7 +64,7 @@ function recursive_transport!(path::Path, volume::Volume,
   if max_depth > 0 && energy(path) > min_energy
     transport!(path,volume)
     for p = path.children #Transport children.
-      recursive_transport!(path,volume, min_energy, max_depth-1)
+      recursive_transport!(p,volume, min_energy, max_depth-1)
     end
   end
 end
@@ -59,7 +76,7 @@ function recursive_transport!(path::Path, volume::Volume,
   if new_data!=nothing
     transport!(path,volume)
     for p = path.children #Transport children
-      recursive_transport!(path,volume, predicate,new_data)
+      recursive_transport!(p,volume, predicate,new_data)
     end
   end
 end
