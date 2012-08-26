@@ -1,4 +1,6 @@
 
+# Tests if inverses are actually inverses.
+
 tuple_vec2d(vec::Vector) = (vec[1],vec[2])
 
 function test_lorentz_transform(times, eps::Number)

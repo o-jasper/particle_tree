@@ -20,7 +20,7 @@ Volume(min_soft::Number,max_soft::Number, Z::Number,A::Number,
 #Radiation distance, (as opposed to length) in length units.
 # NOTE: currently only HE
 radiation_distance(volume::Volume, kind::ParticleKind) =
-    (kind.pdg_code==22 ? 7/9 : 1)*
+    (kind.pdg==22 ? 7/9 : 1)*
     volume.brehm_radiation_length/volume.density
 #Generates energy of soft photon
 rand_soft_photon_energy(volume::Volume) =

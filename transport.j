@@ -2,9 +2,9 @@
 virtual_M(omega, m,p,E,cos_angle) = sqrt(m^2 + 2*omega*(E - p*cos_angle))
 virtual_M(omega, m,p,cos_angle) = virtual_M(omega, m,p,sqrt(m^2+p^2),cos_angle)
 
-#Pair production impossible.
+#Pair production impossible in best case.
 no_pair_production_p(volume::Volume, m,p, m_e) =
-    virtual_M(volume.max_soft_photon, m,p,-1)/2 < m_e
+    (virtual_M(volume.max_soft_photon, m,p,sqrt(m^2+p^2),-1) < 2*m_e)
 
 # Monte-carlo the transport of single path.
 # (returning children, not setting them)
@@ -13,30 +13,30 @@ function transport(path::Path, volume::Volume)
   omega = rand_soft_photon_energy(volume) 
 #Cosine of angle of that photon with the current path.
   cos_angle = rand_3d_cos()
-#Some particle infos.
+#Some current particle infos.
   m = particle_mass(path)
   p = norm(momentum(path))
 #Rest mass of product. 
   M = virtual_M(omega, m,p,cos_angle)
 
-  pdg_code = path.kind.pdg_code #Get pdg code to see what it does.
+  pdg = path.kind.pdg #Get pdg code to see what it does.
 #When we go from CM - back to lab-frame, this is the speed to transform.
 # Note: the soft photon momentum is ignored.
   beta  = momentum(path)/sqrt(p^2 + M^2) #WARNING _NOT_ energy(path)!
   bgamma = beta_gamma(beta)
 #Distance travelled.
-  dist   = radiation_distance(volume, path.kind)*rand_exp()
-  end_pos = path.start_pos + momentum(path)*dist/p
+  dist   = radiation_distance(volume, path.kind)*randexp()
+  end_pos = path.pos + momentum(path)*dist/p
   function lab_frame_particle(kind, E_cm::Number,p_cm)
     Path(kind, end_pos, lorentz_transform_x(E_cm,p_cm, -beta, bgamma))
   end
 #Take out photons that are doomed.
   m_e = particle_mass(electron) 
-  if pdg_code==22 && no_pair_production_p(volume::Volume, m,p, m_e)
+  if pdg==22 && no_pair_production_p(volume::Volume, m,p, m_e)
     return Array(Path,0)
   end
 #Particle production _cm means centre-of mass quantities.
-  if pdg_code == 22 #Photon => pair production
+  if pdg == 22 #Photon => pair production
     E_cm = M/2 #Just split energy equally
  #TODO i don't think this is a nice way of cutting off.
     if E_cm <= m_e # Nothing happened. (apparently too low energies now.)

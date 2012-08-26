@@ -1,12 +1,14 @@
 
-load("rgen.j")
-load("phys_math.j")
+load("util/util.j")
 
-load("particle_kind.j")
+load("simple_sim/rgen.j")
+load("simple_sim/phys_math.j")
 
-load("volume.j")
-load("path.j")
+load("simple_sim/particle_kind.j")
 
-load("transport.j")
+load("simple_sim/volume.j")
+load("simple_sim/path.j")
 
-load("output.j")
+load("simple_sim/transport.j")
+
+load("simple_sim/output.j")

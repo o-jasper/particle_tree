@@ -1,9 +1,9 @@
 
 #Probability distribution sample regeneration.
 
-#Exponential distribution.
-rand_exp(at_prob::Float64) = -log(1-at_prob)
-rand_exp()                 = rand_exp(rand())
+#Exponential distribution. (Turns out Julia already had one.)
+#rand_exp(at_prob::Float64) = -log(1-at_prob)
+#rand_exp()                 = rand_exp(rand())
 
 #1/w distribution (for the soft photon spectrum)
 rand_one_over_x(min::Number,max::Number, at_prob::Float64) =

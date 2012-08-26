@@ -1,6 +1,6 @@
 
 type ParticleKind
-  pdg_code::Int16
+  pdg::Int16
   geant_code::Int16
   mass::Float64
 end
@@ -14,3 +14,5 @@ const electron_mass = 510998.928
 const positron = ParticleKind(-11,2,electron_mass)
 const electron = ParticleKind(+11,3,electron_mass)
 const photon   = ParticleKind(22,1,0)
+const muon_mass = 105.658369e6
+const muon     = ParticleKind(6,30, muon_mass)

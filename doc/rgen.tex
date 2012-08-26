@@ -1,4 +1,7 @@
+\documentclass[12pt]{article} 
+%Hmm, it seems to make a bit excessive edges. >2/7 or so wasted..
 
+\begin{document}
 %(Untested Latex code)
 
 \subsubsection*{Random exponential decay time}
@@ -21,7 +24,7 @@ $$p = \frac{log(x/m_-)}{log(m_+/m_-)}  \Rightarrow
   x = m_-\left(\frac{m_+}{m_-}\right)^p$$
 
 \subsubsection*{Random 3d cosine and direction}
-$$dA = sin(\theta)d\phid\theta \Rightarrow dA = 2\pi sin(\theta)d\theta$$
+$$dA = sin(\theta)d\phi d\theta \Rightarrow dA = 2\pi sin(\theta)d\theta$$
 
 So $A(\theta) = 2\pi \int_0^\theta sin(\theta)d\theta = 2\pi(1-cos(\theta))$
 
@@ -31,3 +34,5 @@ $$ p = \frac{1}{2}(1-cos(\theta)) \Rightarrow cos(\theta) = 2p-1 $$
 
 from which $sin(\theta)=sqrt(1-cos(\theta)^2)$ follows easily, it happens to be
 always positive anyway. $\phi$ is just a flat distribution.
+
+\end{document}
