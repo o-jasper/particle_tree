@@ -1,4 +1,5 @@
 
+#TODO goddamn, there are two geant codes.. Check if things are right..
 type ParticleKind
   pdg::Int16
   geant_code::Int16
@@ -15,4 +16,4 @@ const positron = ParticleKind(-11,2,electron_mass)
 const electron = ParticleKind(+11,3,electron_mass)
 const photon   = ParticleKind(22,1,0)
 const muon_mass = 105.658369e6
-const muon     = ParticleKind(6,30, muon_mass)
+const muon     = ParticleKind(13,6, muon_mass)

@@ -1,6 +1,7 @@
 
 virtual_M(omega, m,p,E,cos_angle) = sqrt(m^2 + 2*omega*(E - p*cos_angle))
-virtual_M(omega, m,p,cos_angle) = virtual_M(omega, m,p,sqrt(m^2+p^2),cos_angle)
+virtual_M(omega, m,p,cos_angle) = 
+    virtual_M(omega, m,p,sqrt(m^2+p^2),cos_angle)
 
 #Pair production impossible in best case.
 no_pair_production_p(volume::Volume, m,p, m_e) =
@@ -27,10 +28,11 @@ function transport(path::Path, volume::Volume)
 #Distance travelled.
   dist   = radiation_distance(volume, path.kind)*randexp()
   end_pos = path.pos + momentum(path)*dist/p
+  #Creates a particle in the lab frome 
   function lab_frame_particle(kind, E_cm::Number,p_cm)
     Path(kind, end_pos, lorentz_transform_x(E_cm,p_cm, -beta, bgamma))
   end
-#Take out photons that are doomed.
+#Take out photons that can no longer pair-produce.
   m_e = particle_mass(electron) 
   if pdg==22 && no_pair_production_p(volume::Volume, m,p, m_e)
     return Array(Path,0)

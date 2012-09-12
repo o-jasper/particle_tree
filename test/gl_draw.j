@@ -66,6 +66,7 @@ function run_this ()
 
     if next_t < time()
       cur_path = transport_path()
+      check_kinematic_consistency(cur_path)
       tree_cnt += 1
       next_t = time() + wait_t
     end
