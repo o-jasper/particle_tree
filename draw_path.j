@@ -17,17 +17,18 @@ end
 # (Likely using @with_primitive)
 
 #Enter the vertex with color of itself.
-function vertex_self_path(parent_pos::Vector{Float64}, p::Path)
+function vertex_self_path(parent_pos::Vector{Float64}, p::ParticleVertex)
   if p.kind.pdg!=22
     glcolorb(path_colorb(p.kind))
     glvertex(parent_pos)
     glvertex(p.pos)
   end
 end
-vertex_self_path(parent::Path, p::Path) = vertex_self_path(parent.pos, p) #!
+vertex_self_path(parent::ParticleVertex, p::ParticleVertex) = 
+    vertex_self_path(parent.pos, p) #!
 
 #Enter lining-vertices of children upto given depth.
-function vertex_paths(p::Path, max_depth::Integer)
+function vertex_paths(p::ParticleVertex, max_depth::Integer)
   for child in p.children
     vertex_self_path(p, child)
     if max_depth>0
@@ -36,22 +37,22 @@ function vertex_paths(p::Path, max_depth::Integer)
   end
 end
 #Defaults to everything.
-vertex_paths(p::Path) = vertex_paths(p, typemax(Int64))
+vertex_paths(p::ParticleVertex) = vertex_paths(p, typemax(Int64))
 
 #Does what the `vertex_path` does, but actually draws it.
-draw_paths(p::Path, max_depth::Integer) = #!
+draw_paths(p::ParticleVertex, max_depth::Integer) = #!
     @with_primitive GL_LINES vertex_paths(p, max_depth)
 
-draw_paths(p::Path) = #!
+draw_paths(p::ParticleVertex) = #!
     @with_primitive GL_LINES vertex_paths(p)
 
 #Enter vertices of each position.(not in shape of lines)
-function vertex_self_pos(p::Path)
+function vertex_self_pos(p::ParticleVertex)
   glcolorb(path_colorb(p.kind))
   glvertex(p.pos)
 end
 #Enter vertices of children upto given depth.
-function vertex_pos(p::Path, max_depth::Integer)
+function vertex_pos(p::ParticleVertex, max_depth::Integer)
   for child in p.children
     vertex_self_pos(p, child)
     if max_depth>0
@@ -60,4 +61,4 @@ function vertex_pos(p::Path, max_depth::Integer)
   end
 end
 #Defaults to everything.
-vertex_pos(p::Path) = vertex_pos(p, typemax(Int64))
+vertex_pos(p::ParticleVertex) = vertex_pos(p, typemax(Int64))

@@ -48,3 +48,8 @@ pair_production_radiation_length (Z,A,r_e) =
 
 pair_production_radiation_length (Z,A) = 
     pair_production_radiation_length (Z,A,electron_radius)
+
+# Mass of the virtual particle in a soft interaction. TODO better naming.
+virtual_M(omega, m,p,E,cos_angle) = sqrt(m^2 + 2*omega*(E - p*cos_angle))
+virtual_M(omega, m,p,cos_angle) = 
+    virtual_M(omega, m,p,sqrt(m^2+p^2),cos_angle)

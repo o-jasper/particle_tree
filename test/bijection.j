@@ -1,6 +1,8 @@
 
 # Tests if inverses are actually inverses.
 
+load("simple_sim/phys_math.j")
+
 tuple_vec2d(vec::Vector) = (vec[1],vec[2])
 
 function test_lorentz_transform(times, eps::Number)
@@ -19,3 +21,5 @@ function test_lorentz_transform(times, eps::Number)
   end
 end
 test_lorentz_transform() = test_lorentz_transform(1000,0.0001)
+
+test_lorentz_transform()

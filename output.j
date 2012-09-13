@@ -1,7 +1,7 @@
 
 tuple_vec3d(vec::Vector) = (vec[1],vec[2],vec[3])
 
-function print_gnuplottable(root::Path, stream, what::Function)
+function print_gnuplottable(root::ParticleVertex, stream, what::Function)
   x,y,z = tuple_vec3d(root.pos)
   px,py,pz = tuple_vec3d(root.momentum)
   E = energy(root)
@@ -18,11 +18,11 @@ function print_gnuplottable(root::Path, stream, what::Function)
 end
 
 #TODO with_open
-function print_gnuplottable(root::Path,file::String, what::Function)
+function print_gnuplottable(root::ParticleVertex,file::String, what::Function)
   stream = open(file, false, true,true,false,false)
   print_gnuplottable(root,file,what)
   close(file)  
 end
 
-print_gnuplottable(p::Path,stream) = 
+print_gnuplottable(p::ParticleVertex,stream) = 
     print_gnuplottable(p,stream, (x)->(true,true))

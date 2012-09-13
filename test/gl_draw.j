@@ -37,8 +37,8 @@ function run_this ()
   vol = Volume(1e3,1e6, 82,207.2,1)
 
   function transport_path()
-#    path = Path(muon, [0,1e9,0])
-    path = Path(electron, [0,1e8,0])
+#    path = ParticleVertex(muon, [0,1e9,0])
+    path = ParticleVertex(electron, [0,1e8,0])
     recursive_transport!(path,vol, 1e6, 100)
     return path
   end

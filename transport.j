@@ -1,51 +1,81 @@
 
-virtual_M(omega, m,p,E,cos_angle) = sqrt(m^2 + 2*omega*(E - p*cos_angle))
-virtual_M(omega, m,p,cos_angle) = 
-    virtual_M(omega, m,p,sqrt(m^2+p^2),cos_angle)
-
 #Pair production impossible in best case.
 no_pair_production_p(volume::Volume, m,p, m_e) =
     (virtual_M(volume.max_soft_photon, m,p,sqrt(m^2+p^2),-1) < 2*m_e)
 
+#Indicates a soft particle from the material is the process in question.
+type ProcessSoftly
+  soft_particle::ParticleKind #Currently always photons.
+  energy::Float64 #Energy and momentum of particle.
+  momentum::Array{Float64,1} #Note if length 0, ignored_momentum_p==true
+  cos_angle::Float64 #(Exact direction doesn't matter much)
+  
+  ignored_momentum_p::Bool
+  ignored_energy_p::Bool #If the energy, momentum where assumed neglible.
+  
+  flattened_momentum_p::Bool
+end
+
+momentum(process::ProcessSoftly) = 
+    process.ignored_momentum_p ? float64([0,0,0]) : process.momentum
+energy(process::ProcessSoftly) =
+    process.ignored_energy_p ? float64(0) : process.energy
+
+#For energies too low to actually do the process.
+type ProcessSoftlyDropout
+end
+momentum(process::ProcessSoftlyDropout) = float64([0,0,0])
+energy(process::ProcessSoftlyDropout)   = float64(0)
+
 # Monte-carlo the transport of single path.
 # (returning children, not setting them)
-function transport(path::Path, volume::Volume)
+function transport(path::ParticleVertex, volume::Volume)
 #Soft photon encountered.
   omega = rand_soft_photon_energy(volume) 
-#Cosine of angle of that photon with the current path.
+  #Cosine of angle of that photon with the current path.
   cos_angle = rand_3d_cos()
 #Some current particle infos.
   m = particle_mass(path)
   p = norm(momentum(path))
+  #Register the soft photon as being the process involved.
+  flat_momentum = momentum(path)*omega*cos_angle/p
+  path.process = ProcessSoftly(photon, omega,flat_momentum, cos_angle,
+                               false,false, true)
 #Rest mass of product. 
   M = virtual_M(omega, m,p,cos_angle)
 
   pdg = path.kind.pdg #Get pdg code to see what it does.
 #When we go from CM - back to lab-frame, this is the speed to transform.
 # Note: the soft photon momentum is ignored.
-  beta  = momentum(path)/sqrt(p^2 + M^2) #WARNING _NOT_ energy(path)!
-  bgamma = beta_gamma(beta)
+  #WARNING _NOT_ energy(path)!
+  final_p = momentum(path) + flat_momentum
+  final_E = sqrt(M^2 + norm(final_p)^2)
+  assert(final_E == omega + energy(path),
+         "$final_E != $(omega + energy(path))")
+  beta,bgamma  = final_p/final_E, final_E/M
 #Distance travelled.
   dist   = radiation_distance(volume, path.kind)*randexp()
   end_pos = path.pos + momentum(path)*dist/p
   #Creates a particle in the lab frome 
   function lab_frame_particle(kind, E_cm::Number,p_cm)
-    Path(kind, end_pos, lorentz_transform_x(E_cm,p_cm, -beta, bgamma))
+    ParticleVertex(kind, end_pos, 
+                   lorentz_transform_x(E_cm,p_cm, -beta, bgamma))
   end
 #Take out photons that can no longer pair-produce.
   m_e = particle_mass(electron) 
   if pdg==22 && no_pair_production_p(volume::Volume, m,p, m_e)
-    return Array(Path,0)
+    return Array(ParticleVertex,0)
   end
 #Particle production _cm means centre-of mass quantities.
   if pdg == 22 #Photon => pair production
     E_cm = M/2 #Just split energy equally
  #TODO i don't think this is a nice way of cutting off.
     if E_cm <= m_e # Nothing happened. (apparently too low energies now.)
-      return [Path(path.kind, end_pos, path.momentum)] 
+      path.process = ProcessSoftlyDropout()
+      return [ParticleVertex(path.kind, end_pos, path.momentum)] 
     end
     p_cm = sqrt(E_cm^2 -m_e^2)*rand_3d_direction()
-    return [lab_frame_particle(electron, E_cm, +p_cm), #Opposite (anti)electron
+    return [lab_frame_particle(electron, E_cm, +p_cm),#Opposite (anti)electron
             lab_frame_particle(positron, E_cm, -p_cm)]
   else #Else basically assume it is something that just brehmstrahlungs
     norm_p_cm = (M - m^2/M)/2
@@ -56,12 +86,12 @@ function transport(path::Path, volume::Volume)
   end
 end
 # Destructive version of the previous.
-function transport!(path::Path, volume::Volume)
+function transport!(path::ParticleVertex, volume::Volume)
   path.children = transport(path,volume)
 end
 
 # Recursively transport a path. (children, grandchildren, etcetera.)
-function recursive_transport!(path::Path, volume::Volume, 
+function recursive_transport!(path::ParticleVertex, volume::Volume, 
                               min_energy::Number, max_depth::Number)
   if max_depth > 0 && energy(path) > min_energy
     transport!(path,volume)
@@ -71,7 +101,7 @@ function recursive_transport!(path::Path, volume::Volume,
   end
 end
 #Arbitrary function deciding if to continue.
-function recursive_transport!(path::Path, volume::Volume, 
+function recursive_transport!(path::ParticleVertex, volume::Volume, 
                               predicate::Function,data)
   #This is so the function can operate recursively aswel.
   new_data = predicate(path,data)

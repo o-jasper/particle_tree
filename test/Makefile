@@ -1,9 +1,7 @@
 
-default: test
+default: test_nongui
 
-test_nongui: test_bijection
-
-test: test_bijection
+test_nongui: test_bijection test_conservation
 
 test_all: test_bijection test_gnuplot_out test_gl_draw
 
@@ -12,6 +10,14 @@ test_bijection:
 	julia bijection.j > result/bijection;
 	cd result;\
 	echo $(USER)" `git status |wc -l` `git log |head -n 1` time `date +%s` `wc -l bijection`" > /tmp/sdl_bad_utils_test_tmp;\
+	cat run_list >> /tmp/sdl_bad_utils_test_tmp;\
+	mv /tmp/sdl_bad_utils_test_tmp run_list
+
+test_conservation:
+	echo Testing conservation;\
+	julia conservation.j > result/conservation;
+	cd result;\
+	echo $(USER)" `git status |wc -l` `git log |head -n 1` time `date +%s` `wc -l conservation`" > /tmp/sdl_bad_utils_test_tmp;\
 	cat run_list >> /tmp/sdl_bad_utils_test_tmp;\
 	mv /tmp/sdl_bad_utils_test_tmp run_list
 
