@@ -12,17 +12,15 @@ The scale of spatial sizes is not quite right yet either.
 
 ## TODO
 
-* Make soft-photon particles that are also listed, and make `DecayEvent`
-  and `InteractEvent` path sections? (better consistency testing.)
+* Soft photon spectrum thing.. Cutting off the low-energy portion because
+  at some point the process is not possible, and figuring what to do with
+  the high end.
 
-* soft photon spectrum thing..
+* Get spatial scales right
 
-* get spatial scales right
+* Histogram stuff.
 
-* histogram stuff.
+* 'Laziness' when tracks dont have to be stored.
 
-* 'hook-and-move-along' mode so not whole trees have to be simulated and 
-  stored in memory and cleared after.
-  (wonder how clever julia is in that regard)
-
-* consistency check
+* Consistency check, particularly the energy one. Also figure stuff about 
+  rounding errors.

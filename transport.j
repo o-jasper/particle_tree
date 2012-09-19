@@ -87,38 +87,51 @@ function transport(path::ParticleVertex, volume::Volume)
             lab_frame_particle(photon,    norm_p_cm,                   -p_cm)]
   end
 end
-# Destructive version of the previous.
-function transport!(path::ParticleVertex, volume::Volume)
-  path.children = transport(path,volume)
-  return nothing
+#For multiple recordings at the same time, just list them.
+function record(arr::Vector{Any}, path::ParticleVertex, 
+                children::Vector{ParticleVertex})
+  for r in arr
+    record(r, path,children)
+  end
+end
+type RecordEntireTree #Indicates to record the entire tree and return that.
+end
+record(entire::RecordEntireTree, path::ParticleVertex, 
+       children::Vector{ParticleVertex}) = #!
+    (path.children = children)
+
+#If tree is recorded, other recorders can be send afterwards.(of course)
+function record_recursively{R}(recorder::R, path::ParticleVertex)
+  record(recorder, path, path.children)
+  for c in path.children
+    record_recursively(recorder, c)
+  end
 end
 
 # Recursively transport a path. (children, grandchildren, etcetera.)
-function recursive_transport!(path::ParticleVertex, volume::Volume, 
-                              min_energy::Number, max_depth::Number)
+function recursive_transport{R}(path::ParticleVertex, volume::Volume, 
+                                min_energy::Number, max_depth::Number,
+                                recorder::R)
   if max_depth > 0 && energy(path) > min_energy
-    transport!(path,volume)
-    for p = path.children #Transport children.
-      recursive_transport!(p,volume, min_energy, max_depth-1)
+    children = transport(path,volume)
+    record(recorder, path, children) #Allows you to record stuff.
+    for p = children #Transport children.
+      recursive_transport(p,volume, min_energy, max_depth-1, recorder)
     end
   end
-end
-#Make a copy of the initial particle. (recomended)
-function recursive_transport(path::ParticleVertex, volume::Volume, 
-                             min_energy::Number, max_depth::Number)
-  c = copy(path)
-  recursive_transport!(c, volume, min_energy,max_depth)
-  return c
+  return path
 end
 #Arbitrary function deciding if to continue.
-function recursive_transport!(path::ParticleVertex, volume::Volume, 
-                              predicate::Function,data)
+function recursive_transport{R}(path::ParticleVertex, volume::Volume, 
+                                predicate::Function,data, recorder::R)
   #This is so the function can operate recursively aswel.
   new_data = predicate(path,data)
   if new_data!=nothing
-    transport!(path,volume)
-    for p = path.children #Transport children
-      recursive_transport!(p,volume, predicate,new_data)
+    children = transport(path,volume)
+    record(recorder, path, children)
+    for p = children #Transport children
+      recursive_transport(p,volume, predicate,new_data, recorder)
     end
   end
+  return path
 end

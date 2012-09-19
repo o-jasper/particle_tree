@@ -1,6 +1,5 @@
 
 ## Some constants
-alpha = 1/137 #TODO this is better-known
 
 ## Special relativity.
 beta_gamma(beta::Number) = 1/sqrt(1-beta^2)
@@ -33,6 +32,7 @@ lorentz_transform(t::Number,x, beta) =
 
 #TODO it is wrong, but all this doesn't matter much, for now,
 # just a factor on all distances
+alpha = 1/137.0359979
 N_A   = 6.022e23
 electron_radius = 2.818e-13
 

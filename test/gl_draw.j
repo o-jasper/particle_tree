@@ -39,7 +39,7 @@ function run_this ()
   function transport_path()
     path = ParticleVertex(muon, [0,1e9,0])
 #    path = ParticleVertex(electron, [0,1e8,0])
-    recursive_transport!(path,vol, 1e6, 100)
+    path = recursive_transport(path,vol, 1e6, 100, RecordEntireTree())
     return path
   end
   cur_path = transport_path()
@@ -66,7 +66,7 @@ function run_this ()
 
     if next_t < time()
       cur_path = transport_path()
-#      check_kinematic_consistency(cur_path)
+      check_kinematic_consistency(cur_path)
       tree_cnt += 1
       next_t = time() + wait_t
     end

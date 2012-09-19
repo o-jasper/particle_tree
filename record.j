@@ -43,22 +43,23 @@ pzf(h::HistogramParticleVertices) = hist_x(pzf_z(h))
 function incorporate(h::HistogramParticleVertices, path::ParticleVertex)
   x,y,z = path.pos[1],path.pos[2],path.pos[3]
   r = sqrt(x^2 + y^2)
-  pz,pr = path.momentum[2], sqrt(path.momentum[1]^2 + path.momentum[2]^2)
+  pz,pr = path.momentum[3], sqrt(path.momentum[1]^2 + path.momentum[2]^2)
   E = energy(path)
   incorporate(h.z_r,     z,r)
   incorporate(h.x_y,     x,y)
   incorporate(h.pz_pr,   pz,pr)
   incorporate(h.E_z,     E,z)
+  incorporate(h.E_r,     E,r)
 #  incorporate(h.pzf_z,   pz/sqrt(pr^2 + pz^2), z) #range?
 end
 
-function incorporate_recursively(h::HistogramParticleVertices,
-                                 path::ParticleVertex)
-  incorporate(h,path)
-  for c in path.children
-    incorporate_recursively(h,c)
-  end
-end
+record(h::HistogramParticleVertices, path::ParticleVertex, 
+       children::Vector{ParticleVertex}) =
+    incorporate(h, path)
+
+incorporate_recursively(h::HistogramParticleVertices,
+                        path::ParticleVertex) =
+    record_recursively(h,path)
 
 function gnuplot_write(h::HistogramParticleVertices, prepend_file::String)
   prep_file(name) = "$prepend_file/$name"
@@ -70,25 +71,27 @@ function gnuplot_write(h::HistogramParticleVertices, prepend_file::String)
   dlmwrite_any(prep_file("E_r"),   E_r(h))
   dlmwrite_any(prep_file("pzf_z"), pzf_z(h))
   
-  dlmwrite_any(prep_file("x"),  x(h))
-  dlmwrite_any(prep_file("y"),  y(h))
-  dlmwrite_any(prep_file("z"),  z(h))
-  dlmwrite_any(prep_file("r"),  r(h))
-  dlmwrite_any(prep_file("pz"), pz(h))
-  dlmwrite_any(prep_file("pr"), pr(h))
-  dlmwrite_any(prep_file("E"),  E(h))
-  dlmwrite_any(prep_file("pzf"),pzf(h))
+  dlmwrite_any(prep_file("x"),  indexless_iter(x(h).arr))
+  dlmwrite_any(prep_file("y"),  indexless_iter(y(h).arr))
+  dlmwrite_any(prep_file("z"),  indexless_iter(z(h).arr))
+  dlmwrite_any(prep_file("r"),  indexless_iter(r(h).arr))
+  dlmwrite_any(prep_file("pz"), indexless_iter(pz(h).arr))
+  dlmwrite_any(prep_file("pr"), indexless_iter(pr(h).arr))
+  dlmwrite_any(prep_file("E"),  indexless_iter(E(h).arr))
+  dlmwrite_any(prep_file("pzf"),indexless_iter(pzf(h).arr))
 
   gnuplot_gen_funs(h, "$prepend_file/load_fun.gnuplot");
 end
 #Generates gnuplot functions for getting positions of stuff in the histograms.
 function gnuplot_gen_funs(h::HistogramParticleVertices, s::IOStream)
   function pfun1(name,hist)
-    write(s, "$(name)_x(i) = $(hist.s) + $(hist.d)*i\n\n")
+    fi = min_i(hist.arr)
+    write(s, "$(name)_x(i) = $(hist.s) + $(hist.d)*(i + $fi)\n\n")
   end
   function pfun2(name,hist)
-    write(s, "$(name)_x(i) = $(hist.sx) + $(hist.dx)*i\n")
-    write(s, "$(name)_y(j) = $(hist.sy) + $(hist.dy)*j\n\n")
+    fi,fj = min_i(hist.arr),min_j(hist.arr)
+    write(s, "$(name)_x(i) = $(hist.sx) + $(hist.dx)*(i + $fi)\n")
+    write(s, "$(name)_y(j) = $(hist.sy) + $(hist.dy)*(j + $fj)\n\n")
   end
   #TODO this can be done better.
   pfun2("z_r",   z_r(h))
