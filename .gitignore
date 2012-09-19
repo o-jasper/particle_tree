@@ -1,0 +1,5 @@
+*.pdf
+*.aux
+*.log
+.#*
+test/result/gnuplot_out.dat

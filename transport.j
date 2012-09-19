@@ -30,10 +30,12 @@ energy(process::ProcessSoftlyDropout)   = float64(0)
 # Monte-carlo the transport of single path.
 # (returning children, not setting them)
 function transport(path::ParticleVertex, volume::Volume)
-#Soft photon encountered.
-  omega = rand_soft_photon_energy(volume) 
   #Cosine of angle of that photon with the current path.
   cos_angle = rand_3d_cos()
+#Soft photon encountered. #TODO constrain min_soft_photon with minimum energy
+# needed (dependent on cos_angle ithink)
+  omega = rand_soft_photon_energy(volume) 
+
 #Some current particle infos.
   m = particle_mass(path)
   p = norm(momentum(path))
@@ -50,8 +52,8 @@ function transport(path::ParticleVertex, volume::Volume)
   #WARNING _NOT_ energy(path)!
   final_p = momentum(path) + flat_momentum
   final_E = sqrt(M^2 + norm(final_p)^2)
-  assert(final_E == omega + energy(path),
-         "$final_E != $(omega + energy(path))")
+#  assert(final_E == omega + energy(path), #Presumed problem.
+#         "$final_E != $(omega + energy(path))")
   beta,bgamma  = final_p/final_E, final_E/M
 #Distance travelled.
   dist   = radiation_distance(volume, path.kind)*randexp()
@@ -63,7 +65,7 @@ function transport(path::ParticleVertex, volume::Volume)
   end
 #Take out photons that can no longer pair-produce.
   m_e = particle_mass(electron) 
-  if pdg==22 && no_pair_production_p(volume::Volume, m,p, m_e)
+  if pdg==22 && no_pair_production_p(volume, m,p, m_e)
     return Array(ParticleVertex,0)
   end
 #Particle production _cm means centre-of mass quantities.
@@ -88,6 +90,7 @@ end
 # Destructive version of the previous.
 function transport!(path::ParticleVertex, volume::Volume)
   path.children = transport(path,volume)
+  return nothing
 end
 
 # Recursively transport a path. (children, grandchildren, etcetera.)
@@ -99,6 +102,13 @@ function recursive_transport!(path::ParticleVertex, volume::Volume,
       recursive_transport!(p,volume, min_energy, max_depth-1)
     end
   end
+end
+#Make a copy of the initial particle. (recomended)
+function recursive_transport(path::ParticleVertex, volume::Volume, 
+                             min_energy::Number, max_depth::Number)
+  c = copy(path)
+  recursive_transport!(c, volume, min_energy,max_depth)
+  return c
 end
 #Arbitrary function deciding if to continue.
 function recursive_transport!(path::ParticleVertex, volume::Volume, 

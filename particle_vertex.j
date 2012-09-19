@@ -25,6 +25,9 @@ ParticleVertex(kind::ParticleKind, pos, momentum::Number) =
 ParticleVertex(kind::ParticleKind, momentum) = 
      ParticleVertex(kind,[0,0,0], momentum)
 
+copy(p::ParticleVertex) = 
+    ParticleVertex(p.kind, p.pos,p.momentum,p.process,p.children)
+
 # Mass of particle.
 particle_mass(path::ParticleVertex)   = particle_mass(path.kind)
 
@@ -54,8 +57,10 @@ function momentum{T}(list::Array{T,1})
   return sum
 end
 
+eps_eql(a,b, eps) = ( abs(2*(a-b)/(a+b)) < eps )
+
 function checknum(x::Number,y::Number, eps::Number, name, more)
-  if abs(x+y) > eps && abs(x-y)>=eps*abs(x+y)
+  if !eps_eql(x,y, eps)
     println("$name wrong before, $x after $y (eps $eps)")
     println(more)
   end

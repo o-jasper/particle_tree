@@ -10,6 +10,7 @@ function path_color(kind::ParticleKind)
     11  : (0.7,0.7,1,1)
     22  : (0.4,  0.4,  0,0.1)
     6   : (1,  0,  1,1)
+    13  : (1,0,1, 1)
   end
 end
 

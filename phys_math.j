@@ -31,14 +31,14 @@ lorentz_transform(t::Number,x, beta, beta_gamma::Number) =
 lorentz_transform(t::Number,x, beta) =
     lorentz_transform(t,x, beta,beta_gamma(beta))
 
-## Bhremstrahlung and pair production.
-brehm_radiation_length (Z,A,r_e) = 
-    A/(4*alpha*N_A*Z*(Z+1)*r_e^2*log(183*Z^(-1/3)))
-
 #TODO it is wrong, but all this doesn't matter much, for now,
 # just a factor on all distances
 N_A   = 6.022e23
 electron_radius = 2.818e-13
+
+## Bhremstrahlung and pair production.
+brehm_radiation_length (Z,A,r_e) = 
+    A/(4*alpha*N_A*Z*(Z+1)*r_e^2*log(183*Z^(-1/3)))
 
 brehm_radiation_length (Z,A) = 
     brehm_radiation_length (Z,A,electron_radius)
