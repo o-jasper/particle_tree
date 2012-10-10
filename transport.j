@@ -1,3 +1,11 @@
+#
+#  Copyright (C) 10-10-2012 Jasper den Ouden.
+#
+#  This is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
 
 #Pair production impossible in best case.
 no_pair_production_p(volume::Volume, m,p, m_e) =
@@ -65,9 +73,9 @@ function transport(path::ParticleVertex, volume::Volume)
   end
 #Take out photons that can no longer pair-produce.
   m_e = particle_mass(electron) 
-  if pdg==22 && no_pair_production_p(volume, m,p, m_e)
-    return Array(ParticleVertex,0)
-  end
+#  if pdg==22 && no_pair_production_p(volume, m,p, m_e) #Why this?
+#    return Array(ParticleVertex,0)
+#  end
 #Particle production _cm means centre-of mass quantities.
   if pdg == 22 #Photon => pair production
     E_cm = M/2 #Just split energy equally
@@ -80,7 +88,7 @@ function transport(path::ParticleVertex, volume::Volume)
     return [lab_frame_particle(electron, E_cm, +p_cm),#Opposite (anti)electron
             lab_frame_particle(positron, E_cm, -p_cm)]
   else #Else basically assume it is something that just brehmstrahlungs
-    norm_p_cm = (M - m^2/M)/2
+    norm_p_cm = (M - m^2/M)/2 #Re-check the math (again.)
     p_cm   = norm_p_cm*rand_3d_direction()
     new_m = particle_mass(path.kind)
     return [lab_frame_particle(path.kind, sqrt(new_m^2 + norm_p_cm^2), +p_cm),

@@ -1,3 +1,11 @@
+#
+#  Copyright (C) 10-10-2012 Jasper den Ouden.
+#
+#  This is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
 
 #TODO hmm want to know the parent i think.
 #TODO the soft photon has momentum, energy too. Only the latter is
@@ -84,7 +92,7 @@ function check_kinematic_consistency(path::ParticleVertex, epsilon::Number,
 # rounding errors can't be that big with float64.
   E = energy(path.children) #Check energy. 
   before_E = energy(path) + energy(path.process)
-  checknum(before_E,E, epsilon, :energy, path.process)
+  checknum(before_E,E, epsilon, :energy, (path.process, path.kind))
   if recurse_depth>0
     for c in path.children
       check_kinematic_consistency(c, epsilon, recurse_depth-1)

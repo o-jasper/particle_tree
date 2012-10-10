@@ -1,3 +1,11 @@
+#
+#  Copyright (C) 10-10-2012 Jasper den Ouden.
+#
+#  This is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
 
 #Histograms a lot of things about particle vertices.
 type HistogramParticleVertices
@@ -86,12 +94,12 @@ end
 function gnuplot_gen_funs(h::HistogramParticleVertices, s::IOStream)
   function pfun1(name,hist)
     fi = min_i(hist.arr)
-    write(s, "$(name)_x(i) = $(hist.s) + $(hist.d)*(i + $fi)\n\n")
+    write(s, "ss_$(name)_x(i) = $(hist.s) + $(hist.d)*(i + $fi)\n\n")
   end
   function pfun2(name,hist)
     fi,fj = min_i(hist.arr),min_j(hist.arr)
-    write(s, "$(name)_x(i) = $(hist.sx) + $(hist.dx)*(i + $fi)\n")
-    write(s, "$(name)_y(j) = $(hist.sy) + $(hist.dy)*(j + $fj)\n\n")
+    write(s, "ss_$(name)_x(i) = $(hist.sx) + $(hist.dx)*(i + $fi)\n")
+    write(s, "ss_$(name)_y(j) = $(hist.sy) + $(hist.dy)*(j + $fj)\n\n")
   end
   #TODO this can be done better.
   pfun2("z_r",   z_r(h))
