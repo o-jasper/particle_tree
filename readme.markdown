@@ -1,4 +1,8 @@
 
+# NOTE
+This is very raw code. As of writing, i haven't even updated the repos it 
+depends on yet!
+
 # Electron-positron-photon shower
 
 This will be an approximation, using only Brehmstrahlung and pair production.
